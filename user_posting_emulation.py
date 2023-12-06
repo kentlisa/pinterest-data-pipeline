@@ -89,9 +89,9 @@ def run_infinite_post_data_loop():
             response_user = requests.post(invoke_url_user, headers=headers, data = payload_user)
 
             # response codes
-            print(f"pin: {response_pin}")
-            print(f"geo: {response_geo}")
-            print(f"user: {response_user}")
+            print(f"pin: {response_pin.status_code}")
+            print(f"geo: {response_geo.status_code}")
+            print(f"user: {response_user.status_code}")
 
 
 if __name__ == "__main__":
