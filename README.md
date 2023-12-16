@@ -1,6 +1,7 @@
 # Pinterest Data Pipeline
 ---
-This project creates a data pipeline using data from Pinterest, including batch and streaming data containing details of a post, details of the user and geographical details. The streaming data is processed with AWS Kinesis, and is cleaned using PySpark and stored in Databricks.
+
+This project creates a data pipeline from data about Pinterest posts. The data includes information about the post, the geographical information about it, and information about the user. The data is first processed as batch data. It is cleaned and queried with SQL to perform some analysis. The same data is then processed as streaming data to practise skills with Kinesis and PySpark. 
 
 
 ### Skills used:
@@ -25,6 +26,7 @@ This project creates a data pipeline using data from Pinterest, including batch 
 - [6. File Structure](#4-file-structure)
 
 ## 1. Dependencies
+
 Install the following python packages before running the project:
 
 - requests
@@ -55,7 +57,25 @@ gh repo clone kentlisa/pinterest-data-pipeline
 
 ## 3. The Data
 
+There are three types of data processed in this project. The first is pin data, which includes the following information:
 
+![Columns and types of pin data.](./screenshots/pin_cols.png)
+
+An example of the pin data.
+![Example of pin data.](./screenshots/pin_data_example.png)
+
+The geographical data has the following columns:
+
+![Columns and types of geo data.](./screenshots/geo_cols.png)
+
+An example of the geo data.
+![Example of geo data.](./screenshots/pin_data_example.png)
+
+The user data has the following columns.
+![Columns and types of user data.](./screenshots/user_cols.png)
+
+An example of the user data.
+![Example of user data.](./screenshots/user_data_example.png)
 
 ## 4. The Pipeline
 Below are instruction on how to set up and use this data pipeline.
@@ -85,21 +105,28 @@ Start the REST Proxy on your EC2 client machine by navigating to your confluent 
 ```
 ./kafka-rest-start /home/ec2-user/confluent-7.2.0/etc/kafka-rest/kafka-rest.properties
 ```
-In the ```user_posting_emulation.py``` file, enter the correct invoke url. Open another terminal, then run the ```user_posting_emulation.py``` file. This will send data to the Kafka topics. Find the data stored in your S3 bucket.
+The ```user_posting_emulation.py``` file contains code to retrieve a random row from each table in the RDS database.
+Enter the correct invoke url in this file. Open another terminal, then run the ```user_posting_emulation.py``` file. This send the data to the corresponding Kafka topics. You should find the data stored in your S3 bucket.
 
 ### 4.4. Databricks
 
 > In this section, the S3 bucket is mounted to Databricks. The data is then cleaned and analysed. Then, it will be scheduled using
 
-Mount your S3 bucket to your Databricks account. Import the ```pinterest_notebook.ipynb``` file to Databricks. This notebook contains the code to clean and query the data.\
+Mount your S3 bucket to your Databricks account. Import the ```pinterest_notebook.ipynb``` file to Databricks. This notebook contains the code to clean and query the data.
+
 The screenshots below contains the code to clean the pin data.
 
 This code drops any duplicate rows that have been imported more than once. Then renames the index column to match the geo and user data.\
 The letters (k and M) are removed from the follower count and replaced to give integers.
+
 ![Code snippet with code from pinterest_notebook.ipynb.](./screenshots/pin_data_clean_1.png)
+
 This snippet shows the code which removes any erroneous data and replaces them with ```None```.
+
 ![Code snippet with code from pinterest_notebook.ipynb.](./screenshots/pin_data_clean_2.png)
+
 Finally, the ```save_location``` column is cleaned so that it only contains the file path. The columns are then put into a sensible order.
+
 ![Code snippet with code from pinterest_notebook.ipynb.](./screenshots/pin_data_clean_3.png)
 
 Several SQL queries are then performed to gain insight into the data - see [section 5](#5-analysis)
@@ -118,7 +145,7 @@ Add to your API so that it has this structure:
 
 Next, modify the invoke url in the ```user_posting_emulation_streaming.py``` to send the data to each stream. Run this file to initiate the data stream.
 
-Load the ```streaming_pinterest_notebook.ipynb``` notebook into Databricks. This notebook contains code to read in the data from the three streams, clean it and send it to Delta tables in Databricks.
+Import the ```streaming_pinterest_notebook.ipynb``` notebook into Databricks. Run this notebook to read in the data from the three streams, clean it and send it to Delta tables in Databricks.
 
 The data is cleaned in much the same way as the batch data.
 
@@ -126,38 +153,38 @@ The data is cleaned in much the same way as the batch data.
 
 > These SQL queries perform some analysis on the data.
 
-1. **Most popular category in each country** \
+1. **Most popular category in each country** 
 
-![SQL table for query 1](./screenshots/sql1.png)
-Only the first 15 rows are shown here.
+    ![SQL table for query 1](./screenshots/sql1.png)
+    Only the first 15 rows are shown here.
 
 2. **Most popular catgeory in each country**
 
-![SQL table for query 2](./screenshots/sql2.png)
+    ![SQL table for query 2](./screenshots/sql2.png)
 
 3. **Country with the user with the most followers**
 
-![SQL table for query 3](./screenshots/sql3.png)
+    ![SQL table for query 3](./screenshots/sql3.png)
 
 4. **Most popular catgeory per age group**
 
-![SQL table for query 4](./screenshots/sql4.png)
+    ![SQL table for query 4](./screenshots/sql4.png)
 
 5. **Median follower count per age group**
 
-![SQL table for query 5](./screenshots/sql5.png)
+    ![SQL table for query 5](./screenshots/sql5.png)
 
 6. **User sign-ups per year**
 
-![SQL table for query 6](./screenshots/sql6.png)
+    ![SQL table for query 6](./screenshots/sql6.png)
 
 7. **Median follower count per sign up year**
 
-![SQL table for query 7](./screenshots/sql7.png)
+    ![SQL table for query 7](./screenshots/sql7.png)
 
 8. **Median follower count per sign up year and age group**
 
-![SQL table for query 8](./screenshots/sql8.png)
+    ![SQL table for query 8](./screenshots/sql8.png)
 
 
 ## 6. File Structure
@@ -182,6 +209,12 @@ Only the first 15 rows are shown here.
    ├─ sql5.png
    ├─ sql6.png
    ├─ sql7.png
-   └─ sql8.png
+   ├─ sql8.png
+   ├─ pin_data_example.png
+   ├─ pin_cols.png
+   ├─ geo_data_example.png
+   ├─ geo_cols.png
+   ├─ user_data_example.png
+   └─ user_cols.png
 ```
 
