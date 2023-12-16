@@ -1,8 +1,6 @@
 import requests
 from time import sleep
 import random
-from multiprocessing import Process
-import boto3
 import json
 import sqlalchemy
 from sqlalchemy import text
@@ -20,9 +18,11 @@ class AWSDBConnector:
         self.PASSWORD = ':t%;yCY3Yjg'
         self.DATABASE = 'pinterest_data'
         self.PORT = 3306
-        
+
     def create_db_connector(self):
-        engine = sqlalchemy.create_engine(f"mysql+pymysql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DATABASE}?charset=utf8mb4")
+        engine = sqlalchemy.create_engine(
+            f"mysql+pymysql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DATABASE}?charset=utf8mb4"
+            )
         return engine
 
 
@@ -39,22 +39,22 @@ def run_infinite_post_data_loop():
 
             pin_string = text(f"SELECT * FROM pinterest_data LIMIT {random_row}, 1")
             pin_selected_row = connection.execute(pin_string)
-            
+
             for row in pin_selected_row:
                 pin_result = dict(row._mapping)
 
             geo_string = text(f"SELECT * FROM geolocation_data LIMIT {random_row}, 1")
             geo_selected_row = connection.execute(geo_string)
-            
+
             for row in geo_selected_row:
                 geo_result = dict(row._mapping)
 
             user_string = text(f"SELECT * FROM user_data LIMIT {random_row}, 1")
             user_selected_row = connection.execute(user_string)
-            
+
             for row in user_selected_row:
                 user_result = dict(row._mapping)
-            
+
             print(pin_result)
             print(geo_result)
             print(user_result)
@@ -73,20 +73,20 @@ def run_infinite_post_data_loop():
             payload_geo = json.dumps({
                 "records": [
                     {"value": geo_result}]
-            }, 
-                default = str)
+            },
+                default=str)
 
             payload_user = json.dumps({
                 "records": [
                     {"value": user_result}]
-            }, 
-                default = str)
-            
+            },
+                default=str)
+
             # post requests for each topic
             headers = {'Content-Type': 'application/vnd.kafka.json.v2+json'}
-            response_pin = requests.post(invoke_url_pin, headers=headers, data = payload_pin)
-            response_geo = requests.post(invoke_url_geo, headers=headers, data = payload_geo)
-            response_user = requests.post(invoke_url_user, headers=headers, data = payload_user)
+            response_pin = requests.post(invoke_url_pin, headers=headers, data=payload_pin)
+            response_geo = requests.post(invoke_url_geo, headers=headers, data=payload_geo)
+            response_user = requests.post(invoke_url_user, headers=headers, data=payload_user)
 
             # response codes
             print(f"pin: {response_pin.status_code}")
@@ -97,5 +97,3 @@ def run_infinite_post_data_loop():
 if __name__ == "__main__":
     run_infinite_post_data_loop()
     print('Working')
-
-
